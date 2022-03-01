@@ -1,5 +1,5 @@
 import React from "react";
-import { getData } from "../api/EntryService"
+import { getData, submitData } from "../api/EntryService"
 
 export class DynamicFormComponent extends React.Component {
     constructor(props) {
@@ -7,7 +7,8 @@ export class DynamicFormComponent extends React.Component {
 
         this.state = {
             entryData: [],
-            isLoaded: false
+            isLoaded: false,
+            payloadMessage: ""
         }
     }
 
@@ -32,11 +33,28 @@ export class DynamicFormComponent extends React.Component {
         )
     }
 
-    handleChange = (event) => {
+    formatData(){
+        let obj = {};
+
+        this.state.entryData.map((entry) => {
+            obj[entry.fieldName] = entry.value;
+        });
+
+        return obj;
+    }
+
+    handleChange = (event, index) => {
+        this.state.entryData[index].value = event.target.value
+        this.setState({entryData: this.state.entryData});
     };
 
     handleSubmit = (event) => {
+        event.preventDefault();
+        submitData(this.formatData()).then((message) => {
+            this.setState({payloadMessage: JSON.stringify(message)});
+        });
     };
+
 
     renderLoading () {
         return (
@@ -44,28 +62,29 @@ export class DynamicFormComponent extends React.Component {
         );
     };
 
-    renderCell(entry) {
+    renderCell(entry, index) {
         return (
             <label>{entry.fieldName}
                 <input
-                onChange = {this.handleChange} 
-                type={entry.type} value ={entry.value}/>
+                type = {entry.type} value = {entry.value}
+                onChange = {e => this.handleChange(e, index)}/>
             </label>
         );
     }
 
-    render() {
-        const { isLoaded, entryData } = this.state;
+    renderForm() {
+        return (
+        <form>{this.state.entryData.map((entry, currIndex) => this.renderCell(entry, currIndex))}
+        <button onClick = {this.handleSubmit}>Submit</button>
+        </form>
+        );
+    }
 
+    render() {
         return (
             <div className = "App">
-                <div>
-                    {
-                        isLoaded?
-                        entryData.map(entry => this.renderCell(entry)) :
-                        this.renderLoading()
-                    }
-                </div>
+                {this.state.isLoaded ? this.renderForm() : this.renderLoading()}
+                <div>{this.state.payloadMessage}</div>
             </div>
         );
     }

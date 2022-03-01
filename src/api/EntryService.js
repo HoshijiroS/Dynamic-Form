@@ -9,11 +9,11 @@ export function getData() {
         .catch(handleError);
 }
 
-export function submitData(entryData) {
+export function submitData(payload) {
     return fetch (dataEndpoint, {
         method: "POST", // no need to put since data duplication is not an issue
-        headers: { "content-type" : "application/json" },
-        body: JSON.stringify(entryData)
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify(payload)
     })
     .then(handleResponse)
     .catch(handleError);
