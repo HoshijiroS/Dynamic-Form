@@ -1,10 +1,10 @@
 import logo from './logo.svg';
 import './App.css';
-import { DynamicFormComponent } from './components/DynamicFormComponent'
+import RootComponent from './components/RootComponent';
 
 function App() {
   return (
-    <DynamicFormComponent></DynamicFormComponent>
+    <RootComponent></RootComponent>
   );
 }
 

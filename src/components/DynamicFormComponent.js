@@ -1,6 +1,5 @@
 import React from "react";
-
-const dataEndpoint = "https://vb-react-exam.netlify.app/api/form";
+import { getData } from "../api/EntryService"
 
 export class DynamicFormComponent extends React.Component {
     constructor(props) {
@@ -17,9 +16,7 @@ export class DynamicFormComponent extends React.Component {
     }
 
     refreshData() {
-        fetch(dataEndpoint)
-        .then(res => res.json())
-        .then(
+        getData().then(
             (result) => {
             this.setState({
                 isLoaded: true,
@@ -73,3 +70,5 @@ export class DynamicFormComponent extends React.Component {
         );
     }
 }
+
+export default DynamicFormComponent;
