@@ -61,8 +61,10 @@ export class DynamicFormComponent extends React.Component {
 
     handleChange = (event, index, type, name) => {
         this.state.entryData[index].value = event.target.value
-        this.state.entryData[index]['validationMessage'] = this.checkIfValid(event.target.value, type, name);
+        this.state.entryData[index]['validationMessage'] = this.fetchValidationMessage(event.target.value, type, name);
         this.setState({entryData: this.state.entryData});
+
+        this.checkIfValid();
     };
 
     handleSubmit = (event) => {
@@ -86,11 +88,19 @@ export class DynamicFormComponent extends React.Component {
         });
     };
 
-    checkIfValid(value, type, name) {
+    checkIfValid() {
+        this.state.entryData.map((entry) => {
+            if(entry.validationMessage !== "") {
+                this.setState({invalid: true})
+            }
+
+            this.setState({invalid: false});
+        });
+    }
+
+    fetchValidationMessage(value, type, name) {
         if(name !== "gender" && name !== "age" !== name !== "testimonial") {
             if(value === "") {
-                this.setState({invalid: true});
-
                 return "Required field cannot be empty."
             }
 
@@ -98,20 +108,17 @@ export class DynamicFormComponent extends React.Component {
                 switch (type) {
                     case "number":
                         if(!/^\d+$/.test(value)) {
-                            this.setState({invalid: true});
                             return "Number field cannot contain letters."
                         }
                         
         
                     case "email":
                         if(!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-                            this.setState({invalid: true});
                             return "Email must be valid."
                         }
         
                 }
 
-                this.setState({invalid: false});
                 return null;
             }
         }
