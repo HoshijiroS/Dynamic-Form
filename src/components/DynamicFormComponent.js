@@ -1,5 +1,15 @@
 import React from "react";
-import { getData, submitData } from "../api/EntryService"
+import { getData, submitData } from "../api/EntryService";
+import ErrorComponent from "./ErrorComponent";
+import SuccessComponent from "./SuccessComponent";
+import Container from '@mui/material/Container';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 export class DynamicFormComponent extends React.Component {
     constructor(props) {
@@ -8,7 +18,11 @@ export class DynamicFormComponent extends React.Component {
         this.state = {
             entryData: [],
             isLoaded: false,
-            payloadMessage: ""
+            isSuccessful: false,
+            payloadMessage: "",
+            hasError: false,
+            errorMessage: "",
+            invalid: false
         }
     }
 
@@ -21,13 +35,15 @@ export class DynamicFormComponent extends React.Component {
             (result) => {
             this.setState({
                 isLoaded: true,
-                entryData: result.data
+                entryData: result.data,
+                hasError: false
             });
             },
             (error) => {
             this.setState({
                 isLoaded: true,
-                error
+                hasError: true,
+                errorMessage: error.message
             });
             }
         )
@@ -43,18 +59,63 @@ export class DynamicFormComponent extends React.Component {
         return obj;
     }
 
-    handleChange = (event, index) => {
+    handleChange = (event, index, type, name) => {
         this.state.entryData[index].value = event.target.value
+        this.state.entryData[index]['validationMessage'] = this.checkIfValid(event.target.value, type, name);
         this.setState({entryData: this.state.entryData});
     };
 
     handleSubmit = (event) => {
+        this.setState({isLoaded: false});
         event.preventDefault();
         submitData(this.formatData()).then((message) => {
-            this.setState({payloadMessage: JSON.stringify(message)});
+            this.setState({
+                isLoaded: true, 
+                isSuccessful: true,
+                hasError: false,
+                payloadMessage: JSON.stringify(message)
+            });
+        })
+        .catch((error) => {
+            this.setState({
+                isLoaded: true, 
+                isSuccessful: false,
+                hasError: true, 
+                errorMessage: error.message
+            });
         });
     };
 
+    checkIfValid(value, type, name) {
+        if(name !== "gender" && name !== "age" !== name !== "testimonial") {
+            if(value === "") {
+                this.setState({invalid: true});
+
+                return "Required field cannot be empty."
+            }
+
+            else {
+                switch (type) {
+                    case "number":
+                        if(!/^\d+$/.test(value)) {
+                            this.setState({invalid: true});
+                            return "Number field cannot contain letters."
+                        }
+                        
+        
+                    case "email":
+                        if(!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
+                            this.setState({invalid: true});
+                            return "Email must be valid."
+                        }
+        
+                }
+
+                this.setState({invalid: false});
+                return null;
+            }
+        }
+    }
 
     renderLoading () {
         return (
@@ -62,21 +123,58 @@ export class DynamicFormComponent extends React.Component {
         );
     };
 
+    renderOption(opt) {
+        return (<MenuItem value={opt}>{opt}</MenuItem>);
+    }
+
     renderCell(entry, index) {
+        if(entry.type === "select") {
+            return (
+            <FormControl fullWidth>
+                <InputLabel id="simple-select-label">{entry.fieldname}</InputLabel>
+                <Select
+                    required={entry.fieldName !== "gender" && entry.fieldName !== "age" !== entry.fieldName !== "testimonial"}
+                    labelId="simple-select-label"
+                    id="simple-select"
+                    value={entry.value}
+                    label={entry.fieldname}
+                    onChange={e => this.handleChange(e, index, entry.type, entry.fieldName)}
+                >
+                    {entry.options.map(option => this.renderOption(option))}
+                </Select>
+            </FormControl>
+            );
+        }
+
         return (
-            <label>{entry.fieldName}
-                <input
-                type = {entry.type} value = {entry.value}
-                onChange = {e => this.handleChange(e, index)}/>
-            </label>
+            <TextField
+            fullWidth
+            id="outlined-flexible"
+            label={entry.fieldName}
+            type={entry.type}
+            required={entry.fieldName !== "gender" && entry.fieldName !== "age" !== entry.fieldName !== "testimonial"}
+            multiline
+            maxRows={4}
+            value={entry.value}
+            error={entry.validationMessage}
+            helperText={entry.validationMessage}
+            id="margin-normal" margin="normal"
+            onChange = {e => this.handleChange(e, index, entry.type, entry.fieldName)}
+            />
         );
     }
 
     renderForm() {
         return (
-        <form>{this.state.entryData.map((entry, currIndex) => this.renderCell(entry, currIndex))}
-        <button onClick = {this.handleSubmit}>Submit</button>
-        </form>
+            <Container maxWidth="md" >
+                <Typography sx={{marginTop: 5}} variant="h5" align="left">Dynamic Form</Typography>
+                {this.state.entryData.map((entry, currIndex) => this.renderCell(entry, currIndex))}
+
+                {this.state.hasError ? <ErrorComponent errorMessage = {this.state.errorMessage}></ErrorComponent> : <div></div>}
+                {this.state.isSuccessful ? <SuccessComponent message = {this.state.payloadMessage}></SuccessComponent> : <div></div>}
+
+                <Button disabled = {this.state.invalid} sx={{marginTop: 5}} variant="contained" onClick = {this.handleSubmit}>Submit</Button>
+            </Container>
         );
     }
 
@@ -84,7 +182,6 @@ export class DynamicFormComponent extends React.Component {
         return (
             <div className = "App">
                 {this.state.isLoaded ? this.renderForm() : this.renderLoading()}
-                <div>{this.state.payloadMessage}</div>
             </div>
         );
     }

@@ -8,8 +8,3 @@ export async function handleResponse(response) {
 
     throw new Error ("Error " + response.status);
 }
-
-export function handleError(error) {
-    console.error("API call failed: " + error);
-    throw error;
-}

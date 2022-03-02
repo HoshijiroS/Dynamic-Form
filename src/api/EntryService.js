@@ -5,8 +5,7 @@ const dataEndpoint = "https://vb-react-exam.netlify.app/api/form";
 
 export function getData() {
     return fetch (dataEndpoint)
-        .then(handleResponse)
-        .catch(handleError);
+        .then(handleResponse);
 }
 
 export function submitData(payload) {
@@ -15,6 +14,5 @@ export function submitData(payload) {
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify(payload)
     })
-    .then(handleResponse)
-    .catch(handleError);
+    .then(handleResponse);
 }
