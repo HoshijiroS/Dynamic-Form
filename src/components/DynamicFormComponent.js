@@ -89,8 +89,6 @@ export class DynamicFormComponent extends React.Component {
     };
 
     checkIfValid() {
-
-        console.log()
         this.setState({invalid: false});
 
         this.state.entryData.map((entry) => {
