@@ -1,6 +1,5 @@
 import React from "react";
 import Alert from '@mui/material/Alert';
-import { Typography } from "@mui/material";
 
 export class SuccessComponent extends React.Component {
     constructor(props) {

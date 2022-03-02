@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { handleResponse, handleError } from "./ApiUtils";
+import { handleResponse } from "./ApiUtils";
 
 const dataEndpoint = "https://vb-react-exam.netlify.app/api/form";
 
